@@ -48,6 +48,8 @@
 #define DELAY_FOREVER portMAX_DELAY
 #endif
 
+#define DELAY_24_HOURS_MS 86400000 // 24 hours in milliseconds
+
 #if defined(BATTERY_PIN) && defined(ARCH_ESP32)
 
 #ifndef BAT_MEASURE_ADC_UNIT // ADC1 is default
@@ -759,7 +761,7 @@ void Power::shutdown()
 #ifdef PIN_LED3
     ledOff(PIN_LED3);
 #endif
-    doDeepSleep(DELAY_FOREVER, false, true);
+    doDeepSleep(DELAY_24_HOURS_MS, false, true);
 #elif defined(ARCH_PORTDUINO)
     exit(EXIT_SUCCESS);
 #else
