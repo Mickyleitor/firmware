@@ -56,6 +56,8 @@ Observable<esp_sleep_wakeup_cause_t> notifyLightSleepEnd;
 // deep sleep support
 RTC_DATA_ATTR int bootCount = 0;
 
+#define DELAY_8_HOURS_MS (8 * 60 * 60 * 1000)   // 8 hours in milliseconds
+
 // -----------------------------------------------------------------------------
 // Application
 // -----------------------------------------------------------------------------
@@ -135,8 +137,15 @@ void initDeepSleep()
     // If we booted because our timer ran out or the user pressed reset, send those as fake events
     RESET_REASON hwReason = rtc_get_reset_reason(0);
 
-    if (hwReason == RTCWDT_BROWN_OUT_RESET)
+    if (hwReason == RTCWDT_BROWN_OUT_RESET){
+        // If we booted because of brownout, it could be that we are in a brownout loop
+        // so we will go to deep sleep for 8 hours to give the battery a chance to recover
+        // enough to power from solar panel. At least, it would be reconnected to the
+        // mesh network after 8 hours.
+        LOG_DEBUG("Booted because of brownout, going to deep sleep for 8 hours");
+        doDeepSleep(DELAY_8_HOURS_MS, true, true);
         reason = "brownout";
+    }        
 
     if (hwReason == TG0WDT_SYS_RESET)
         reason = "taskWatchdog";
